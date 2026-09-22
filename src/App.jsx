@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "./lib/supabase";
 import "./App.css";
 
 function formatTime(timeValue) {
@@ -111,39 +110,55 @@ function App() {
     });
   }
 
-  async function confirmDate() {
-    if (!date || !time) {
-      alert("Choose a date and time first ☕");
-      return;
-    }
+ async function confirmDate() {
 
-    if (!supabase) {
-      alert("Supabase is not configured on Vercel. Add the VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY environment variables, then redeploy.");
-      return;
+    if (!date || !time) {
+        alert("Choose a date and time first ☕");
+        return;
     }
 
     try {
-      const { error } = await supabase
-        .from("coffee_responses")
-        .insert({
-          coffee_date: date,
-          coffee_time: time,
-          coffee_shop: place,
-          message: "Looking forward to it! ❤️"
-        });
 
-      if (error) {
-        console.error("Supabase error:", error);
-        alert(`Could not save your response: ${error?.message || "Unknown database error."}`);
-        return;
-      }
+        const response = await fetch(
+          "/save_response.php",
+            {
+                method: "POST",
 
-      setPage(3);
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    date: date,
+                    time: time,
+                    shop: place,
+                    message: "Looking forward to it! ❤️"
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+
+            setPage(3);
+
+        } else {
+
+            alert(data.message);
+
+        }
+
     } catch (error) {
-      console.error("Connection error:", error);
-      alert(`Could not connect to Supabase: ${error?.message || "Check your Vercel environment variables."}`);
+
+        console.error(error);
+
+        alert(
+            "Could not connect to the server."
+        );
+
     }
-  }
+}
 
   return (
     <div className="app">
