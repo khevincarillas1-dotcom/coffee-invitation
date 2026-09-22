@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "./lib/supabase";
 import "./App.css";
 
 function formatTime(timeValue) {
@@ -112,10 +113,37 @@ function App() {
 
  async function confirmDate() {
 
-    if (!date || !time) {
-        alert("Choose a date and time first ☕");
-        return;
+  async function confirmDate() {
+  if (!date || !time) {
+    alert("Choose a date and time first ☕");
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+  .from("coffee_responses")
+  .insert([
+    {
+      coffee_date: date,
+      coffee_time: time,
+      coffee_shop: place,
+      message: "Looking forward to it! ❤️"
     }
+  ]);
+
+    if (error) {
+      console.error(error);
+      alert("Could not save your response.");
+      return;
+    }
+
+    setPage(3);
+
+  } catch (error) {
+    console.error(error);
+    alert("Could not connect to the server.");
+  }
+}
 
     try {
 
