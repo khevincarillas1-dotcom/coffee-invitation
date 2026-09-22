@@ -111,82 +111,39 @@ function App() {
     });
   }
 
- async function confirmDate() {
-
   async function confirmDate() {
-  if (!date || !time) {
-    alert("Choose a date and time first ☕");
-    return;
-  }
-
-  try {
-    const { error } = await supabase
-  .from("coffee_responses")
-  .insert([
-    {
-      coffee_date: date,
-      coffee_time: time,
-      coffee_shop: place,
-      message: "Looking forward to it! ❤️"
-    }
-  ]);
-
-    if (error) {
-      console.error(error);
-      alert("Could not save your response.");
+    if (!date || !time) {
+      alert("Choose a date and time first ☕");
       return;
     }
 
-    setPage(3);
-
-  } catch (error) {
-    console.error(error);
-    alert("Could not connect to the server.");
-  }
-}
+    if (!supabase) {
+      alert("Supabase is not configured on Vercel. Add the VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY environment variables, then redeploy.");
+      return;
+    }
 
     try {
+      const { error } = await supabase
+        .from("coffee_responses")
+        .insert({
+          coffee_date: date,
+          coffee_time: time,
+          coffee_shop: place,
+          message: "Looking forward to it! ❤️"
+        });
 
-        const response = await fetch(
-          "/save_response.php",
-            {
-                method: "POST",
+      if (error) {
+        console.error("Supabase error:", error);
+        alert(`Could not save your response: ${error?.message || "Unknown database error."}`);
+        return;
+      }
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    date: date,
-                    time: time,
-                    shop: place,
-                    message: "Looking forward to it! ❤️"
-                })
-            }
-        );
-
-        const data = await response.json();
-
-        if (data.success) {
-
-            setPage(3);
-
-        } else {
-
-            alert(data.message);
-
-        }
-
+      setPage(3);
     } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Could not connect to the server."
-        );
-
+      console.error("Connection error:", error);
+      alert(`Could not connect to Supabase: ${error?.message || "Check your Vercel environment variables."}`);
     }
-}
+  }
 
   return (
     <div className="app">
