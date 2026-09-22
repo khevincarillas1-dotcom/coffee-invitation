@@ -120,7 +120,7 @@ function App() {
     try {
 
         const response = await fetch(
-          "/save_response.php",
+          "./save_response.php",
             {
                 method: "POST",
 
